@@ -9,8 +9,9 @@ import asyncio
 from desktop_notifier import DesktopNotifier, Urgency, Button
  
 def handler(signum, frame):
+    client.send("____deco".encode('ascii'))
     curses.endwin()
-    exit(1)
+    sys.exit(1)
  
 signal.signal(signal.SIGINT, handler)
 q = queue.Queue()
