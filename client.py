@@ -28,7 +28,7 @@ nicknames = []
 
 nickname = randoum()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('localhost', 8766))
+client.connect(('176.151.185.0', 5556))
 
 
 def receive():

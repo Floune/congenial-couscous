@@ -2,7 +2,7 @@ import socket, threading
 import sys
 import signal
 host = ''                                                    
-port = 8766                                                           
+port = 8767                                                          
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)             
 server.bind((host, port))                                             
 server.listen()
