@@ -5,7 +5,7 @@ from nickname import randoum
 from curses import wrapper
 import signal
 import time
-import asyncio
+import sys()
 from desktop_notifier import DesktopNotifier, Urgency, Button
  
 def handler(signum, frame):
