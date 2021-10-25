@@ -30,7 +30,7 @@ nicknames = []
 nickname = randoum()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-client.connect(os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), os.environ.get('FLOUNE_CHAT_PORT', 5556))
+client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), os.environ.get('FLOUNE_CHAT_PORT', 5556)))
 
 def receive():
     while True:
