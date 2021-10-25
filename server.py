@@ -1,5 +1,5 @@
 import socket, threading
-host = '127.0.0.1'                                                    
+host = ''                                                    
 port = 8767                                                           
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)             
 server.bind((host, port))                                             
@@ -17,13 +17,15 @@ def handle(client):
     while True:
         try:   
             message = client.recv(1024)
+            print("nex messssss")
+            print(message)
             broadcast(message)
         except:        
             index = clients.index(client)
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            broadcast('{}:::b\'left!'.format(nickname).encode('ascii'))
+            broadcast('{}::::\'left!'.format(nickname).encode('ascii'))
             nicknames.remove(nickname)
             break
 
@@ -36,7 +38,7 @@ def receive():
         nicknames.append(nickname)
         clients.append(client)
         print("Nickname is {}".format(nickname))
-        broadcast("{}:::b'joined!".format(nickname).encode('ascii'))
+        broadcast("{}::::joined!".format(nickname).encode('ascii'))
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 
