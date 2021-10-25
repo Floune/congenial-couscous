@@ -24,7 +24,7 @@ nicknames = []
 
 nickname = randoum()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('176.151.185.0', 5556))
+client.connect(('', 5556))
 
 
 def receive():
@@ -60,9 +60,7 @@ def updateGui(win):
         message="nouveau message ultra secret",
         urgency=Urgency.Critical,
         buttons=[
-            Button(
-                title="j'ai vu, fous moi la paix",
-                on_pressed=lambda: print("ok")),
+            Button(title="j'ai vu, fous moi la paix"),
         ],
     ),
     win.move(0, 0)
