@@ -5,6 +5,7 @@ from nickname import randoum
 from curses import wrapper
 import signal
 import time
+import os
 import sys
 from desktop_notifier import DesktopNotifier, Urgency, Button
 import requests
@@ -28,8 +29,9 @@ nicknames = []
 
 nickname = randoum()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('176.151.185.0', 5556))
 
+
+client.connect(os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), os.environ.get('FLOUNE_CHAT_PORT', 5556))
 
 def receive():
     while True:
