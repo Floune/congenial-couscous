@@ -5,6 +5,8 @@ from nickname import randoum
 from curses import wrapper
 import signal
 import time
+import asyncio
+from desktop_notifier import DesktopNotifier, Urgency, Button
  
 def handler(signum, frame):
     curses.endwin()
@@ -12,6 +14,7 @@ def handler(signum, frame):
  
 signal.signal(signal.SIGINT, handler)
 q = queue.Queue()
+notify = DesktopNotifier()
 
 messages = []
 currentMsg = ""
@@ -20,7 +23,7 @@ nicknames = []
 
 nickname = randoum()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('', ))
+client.connect(('176.151.185.0', 5556))
 
 
 def receive():
@@ -31,6 +34,7 @@ def receive():
                 client.send(nickname.encode('ascii'))
             else:
                 q.put(message)
+
 
         except:
             print("An error occured!")
@@ -50,6 +54,16 @@ def gui():
 
        
 def updateGui(win):
+    notify.send_sync(
+        title="prout",
+        message="nouveau message ultra secret",
+        urgency=Urgency.Critical,
+        buttons=[
+            Button(
+                title="j'ai vu, fous moi la paix",
+                on_pressed=lambda: print("ok")),
+        ],
+    ),
     win.move(0, 0)
     win.clear()
     win.refresh()
