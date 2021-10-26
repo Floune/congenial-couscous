@@ -26,6 +26,8 @@ volume = 50
 messages = []
 users = 0
 alecoute = "rien"
+tabinfo = 0
+news = []
 
 letterColorIndex = 0
 
@@ -34,6 +36,20 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), int(os.environ.get('FLOUNE_CHAT_PORT', 5556))))
 
+radios = {
+  "metal": {
+    "url": "http://radio.radiometal.com/radiometal.mp3",
+    "commentaire": "metaaaal"
+  },
+  "nolife": {
+    "url": "https://listen.nolife-radio.com/stream",
+    "commentaire": "nolife mon gars"
+  },
+  "culture": {
+    "url": "http://icecast.radiofrance.fr/franceculture-lofi.mp3",
+    "commentaire": "la culture"
+  },
+}
 
 
 def receive():
@@ -46,6 +62,7 @@ def receive():
                 client.send(nickname.encode('utf-8'))
             elif "NUMBEROFUSERS" in message:
                 users = message.split("####")[1]
+                q.put("")
             else:
                 q.put(message)
 
@@ -68,26 +85,32 @@ def gui():
 
        
 def displayInfos(win):
-    win.move(0, 0)
-    win.addstr(0, 0, "{} users |".format(users))
-    win.refresh()
-    win.addstr(0, 11, "Connecté en tant que ")
-    win.refresh()
-    win.addstr(0, 33, "{}".format(nickname), curses.color_pair(7))
-    win.refresh()
-    win.addstr(1, 0, "à l'écoute: {} | volume : {}%".format(alecoute, volume))
-    win.refresh()
+    if tabinfo == 0:
+        mes = "participant" if users == "1" else "participants"
+        win.move(0, 0)
+        win.addstr(1, 0, "{} {}".format(users, mes))
+        win.refresh()
+        win.addstr(0, 0, "Connecté en tant que ")
+        win.refresh()
+        win.addstr(0, 22, "{}".format(nickname), curses.color_pair(7))
+        win.refresh()
+    elif tabinfo == 1:
+        win.addstr(0, 0, "à l'écoute: {}".format(alecoute))
+        win.addstr(1, 0, "volume : {}%".format(volume))
+        win.refresh()
 
 
 def displayMessages(win):
     for i, m in enumerate(messages):
-        if "::::" in m:
+        if (len(m.split("::::")) > 1 and m.split("::::")[1] == "") or len(m) < 1:
+            del(messages[i])
+        elif "::::" in m:
             userMessage(m, i, win)
         elif "####" in m:
             systemMessage(m, i, win)
 
 def userMessage(m, i, win):
-    arr = m.split("::::")        
+    arr = m.split("::::")     
     if len(arr) > 1:
         colorIndex = (ord(arr[0][letterColorIndex]) % 5) + 1
         win.addstr(i + 3, 0, arr[0], curses.color_pair(colorIndex))
@@ -113,15 +136,25 @@ def updateGui(win):
     displayMessages(win)
 
 def handleMessages(message):
-    global colorSequence
     global messages
     if len(messages) > 16:
         del messages[0]
     messages.append(message)
 
+
+def radioFrenezy(adresse, commentaire):
+    global alecoute
+    global p
+    p.stop()
+    p = vlc.MediaPlayer(adresse)
+    p.audio_set_volume(volume)
+    alecoute = commentaire
+    p.play()
+
 def handleCommand(c):
     global alecoute
     global p
+
     if c[1:] == "joke":
         jk = requests.get("https://api.chucknorris.io/jokes/random")
         client.send('{}::::{}'.format(nickname, jk.json()['value']).encode("utf8"))
@@ -129,27 +162,17 @@ def handleCommand(c):
     elif c[1:] == "shrug":
         client.send('{}::::{}'.format(nickname, "¯\\_(ツ)_/¯").encode("utf8"))
 
+    elif c[1:] == "swagg":
+        changeColor(letterColorIndex)
+
     elif c[1:] == "nolife":
-        p.stop()
-        p = vlc.MediaPlayer("https://listen.nolife-radio.com/stream")
-        p.audio_set_volume(volume)
-        alecoute = "nolife radio mon gars"
-        p.play()
+        radioFrenezy(radios[c[1:]]["url"], radios[c[1:]]["commentaire"])
 
     elif c[1:] == "culture":
-        p.stop()
-        p = vlc.MediaPlayer("http://icecast.radiofrance.fr/franceculture-lofi.mp3")
-        p.audio_set_volume(volume)
-        alecoute = "la culture"
-        p.play()
+        radioFrenezy(radios[c[1:]]["url"], radios[c[1:]]["commentaire"])
 
     elif c[1:] == "metal":
-        p.stop()
-        p = vlc.MediaPlayer("http://radio.radiometal.com/radiometal.mp3")
-        p.audio_set_volume(volume)
-        alecoute = "la culture"
-        p.play()
-
+        radioFrenezy(radios[c[1:]]["url"], radios[c[1:]]["commentaire"])
 
     elif c[1:] == "u":
         setVolume("up")
@@ -161,12 +184,17 @@ def handleCommand(c):
         alecoute = "plus rien"
         p.stop()
 
-    elif c[1:] == "swagg":
-        changeColor(letterColorIndex)
+    elif c[1:] == "tab":
+        handleTabs()
 
     else:
         client.send('{}'.format(c).encode("utf8"))
 
+    q.put("")
+
+def handleTabs():
+    global tabinfo
+    tabinfo = tabinfo + 1 if tabinfo < 1 else 0
 
 def setVolume(comment):
     global volume

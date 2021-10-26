@@ -67,7 +67,14 @@ def deco(client):
 
 
 def handleCommand(c, client):
-    helpp = ["/joke", "/shrug", "/swagg", "radios: /nolife /culture /metal", "controls : /stop /u /d )"]
+    helpp = [
+        "/joke",
+        "/shrug",
+        "/swagg (changer sa couleur)",
+        "/tab (changer l'onglet des infos)",
+        "radios: /nolife /culture /metal",
+        "controls : /stop /u /d )"
+    ]
     if (c == "help"):
         client.send('system####{}'.format("HELP").encode('utf-8'))
         time.sleep(0.4)
