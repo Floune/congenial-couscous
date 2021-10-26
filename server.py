@@ -3,7 +3,7 @@ import sys
 import signal
 import time
 host = ''                                                    
-port = 8767                                               
+port = 8766                                              
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)             
 server.bind((host, port))                                             
 server.listen()
@@ -68,12 +68,16 @@ def deco(client):
 
 def handleCommand(c, client):
     helpp = [
-        "/joke",
-        "/shrug",
+        "/chat",
+        "/joke /shrug /wave /raslefion /nonmerci /kill /bizarre",
         "/swagg (changer sa couleur)",
         "/tab (changer l'onglet des infos)",
         "radios: /nolife /culture /metal",
-        "controls : /stop /u /d )"
+        "controls : /stop /u /d )",
+        "/todo",
+        "/new faire les courses",
+        "/done 0",
+        "/del 0",
     ]
     if (c == "help"):
         client.send('system####{}'.format("HELP").encode('utf-8'))
