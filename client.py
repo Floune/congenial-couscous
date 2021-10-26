@@ -9,8 +9,9 @@ import os
 import sys
 #from desktop_notifier import DesktopNotifier, Urgency, Button
 import requests
-import vlc
-import json
+from todo import *
+from emojis import *
+from radio import *
 
 
 def handler(signum, frame):
@@ -22,38 +23,22 @@ def handler(signum, frame):
 signal.signal(signal.SIGINT, handler)
 q = queue.Queue()
 #notify = DesktopNotifier()
-p = vlc.MediaPlayer("https://listen.nolife-radio.com/stream")
 
-volume = 50
 messages = []
 users = 0
-alecoute = "rien"
 tabinfo = 0
-news = []
 activity = "chat"
-todos = []
-
 letterColorIndex = 0
+emojisNames = ["shrug", "wave", "raslefion", "nonmerci", "kill", "bizarre"]
+radios = ["metal", "culture", "nolife", "u", "d", "stop"]
+alecoute = ""
+volume = ""
+
 
 nickname = randoum()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), int(os.environ.get('FLOUNE_CHAT_PORT', 5556))))
-
-radios = {
-  "metal": {
-    "url": "http://radio.radiometal.com/radiometal.mp3",
-    "commentaire": "metaaaal"
-  },
-  "nolife": {
-    "url": "https://listen.nolife-radio.com/stream",
-    "commentaire": "nolife mon gars"
-  },
-  "culture": {
-    "url": "http://icecast.radiofrance.fr/franceculture-lofi.mp3",
-    "commentaire": "la culture"
-  },
-}
 
 
 def receive():
@@ -157,62 +142,21 @@ def handleMessages(message):
     messages.append(message)
 
 
-def radioFrenezy(adresse, commentaire):
-    global alecoute
-    global p
-    p.stop()
-    p = vlc.MediaPlayer(adresse)
-    p.audio_set_volume(volume)
-    alecoute = commentaire
-    p.play()
 
 def handleCommand(c):
     global alecoute
-    global p
+    global volume
 
-    if c[1:] == "joke":
-        jk = requests.get("https://api.chucknorris.io/jokes/random")
-        client.send('{}::::{}'.format(nickname, jk.json()['value']).encode("utf8"))
+    if c[1:] in emojisNames:
+        emoj(nickname, c[1:], client)
 
-    elif c[1:] == "shrug":
-        client.send('{}::::{}'.format(nickname, "¯\\_(ツ)_/¯").encode("utf8"))
-
-    elif c[1:] == "wave":
-        client.send('{}::::{}'.format(nickname, "°º¤ø,¸¸,ø¤º°`°º¤ø,¸,ø¤°º¤ø,¸¸,ø¤º°`°º¤ø,").encode("utf8"))
-
-    elif c[1:] == "raslefion":
-        client.send('{}::::{}'.format(nickname, "(╯°□°）╯ ︵ ┻━┻").encode("utf8"))
-
-    elif c[1:] == "nonmerci":
-        client.send('{}::::{}'.format(nickname, "╭∩╮（︶︿︶）╭∩╮").encode("utf8"))
-
-    elif c[1:] == "kill":
-        client.send('{}::::{}'.format(nickname, "(╯°□°)--︻╦╤─ - - -").encode("utf8"))
-
-    elif c[1:] == "bizarre":
-        client.send('{}::::{}'.format(nickname, "(ノಠ益ಠ)ノ彡").encode("utf8"))
+    elif c[1:] in radios:
+        new = handleRadio(c[1:])
+        alecoute = new[0]
+        volume = new[1]
 
     elif c[1:] == "swagg":
         changeColor(letterColorIndex)
-
-    elif c[1:] == "nolife":
-        radioFrenezy(radios[c[1:]]["url"], radios[c[1:]]["commentaire"])
-
-    elif c[1:] == "culture":
-        radioFrenezy(radios[c[1:]]["url"], radios[c[1:]]["commentaire"])
-
-    elif c[1:] == "metal":
-        radioFrenezy(radios[c[1:]]["url"], radios[c[1:]]["commentaire"])
-
-    elif c[1:] == "u":
-        setVolume("up")
-
-    elif c[1:] == "d":
-        setVolume("down")
-
-    elif c[1:] == "stop":
-        alecoute = "plus rien"
-        p.stop()
 
     elif c[1:] == "tab":
         handleTabs()
@@ -244,53 +188,11 @@ def handleTabs():
     global tabinfo
     tabinfo = tabinfo + 1 if tabinfo < 1 else 0
 
-def addTodo(todo):
-    global todos
-    if len(todos) == 9:
-        todos.append({"value": "finir mes autres todos", "color": 4})
-    elif len(todos) < 10:
-        todos.append({"value": todo[4:], "color": 4})
-    syncTodos()
-
-def checkTodo(cmd):
-    global todos
-    try:
-        todos[int(cmd[5:6])]["color"] = 3
-    except:
-        print("MERDE")
-    syncTodos()
-
-def delTodo(cmd):
-    global todos
-    try:
-        del(todos[int(cmd[4:5])])
-    except:
-        print("MERDE")
-    syncTodos()
-
-def delAllTodo():
-    global todos
-    todos = []
-    syncTodos()
-
-def syncTodos():
-    global todos
-    with open('excellentsystemededonnees.json', 'w') as outfile:
-        json.dump(todos, outfile)
 
 def changeActivity(newActivity):
     global activity
     activity = newActivity
 
-def setVolume(comment):
-    global volume
-    if comment == "up":
-        if volume < 90:
-            volume += 10
-    if comment == "down":
-        if volume > 10:
-            volume -= 10        
-    p.audio_set_volume(volume)
 
 def changeColor(index):
     global letterColorIndex
@@ -318,12 +220,6 @@ def write():
         win.clear()
         win.refresh()
 
-def maybeTodo():
-    global todos
-    with open('excellentsystemededonnees.json') as json_file:
-        data = json.load(json_file)
-        for p in data:
-            todos.append(p)
 
 def main(stdscr):
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE),
@@ -332,11 +228,11 @@ def main(stdscr):
     curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_RED),
     curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_YELLOW),
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_MAGENTA),
-
     curses.init_pair(7, curses.COLOR_RED, curses.COLOR_BLACK),
 
 
     maybeTodo()
+
     receive_thread = threading.Thread(target=receive)
     receive_thread.start()
 
