@@ -7,25 +7,27 @@ import signal
 import time
 import os
 import sys
-from desktop_notifier import DesktopNotifier, Urgency, Button
+#from desktop_notifier import DesktopNotifier, Urgency, Button
 import requests
 import vlc
 
- 
 def handler(signum, frame):
+    sys.exit(1)
     client.send("____deco".encode('utf-8'))
     curses.endwin()
-    sys.exit(1)
+
  
 signal.signal(signal.SIGINT, handler)
 q = queue.Queue()
-notify = DesktopNotifier()
+#notify = DesktopNotifier()
 p = vlc.MediaPlayer("https://listen.nolife-radio.com/stream")
 
+volume = 50
 messages = []
-currentMsg = ""
-colorSequence = []
-nicknames = []
+users = 0
+alecoute = "rien"
+
+letterColorIndex = 0
 
 nickname = randoum()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -33,12 +35,17 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), int(os.environ.get('FLOUNE_CHAT_PORT', 5556))))
 
 
+
 def receive():
+    global users
     while True:
         try:
             message = client.recv(1024).decode('utf-8')
+
             if message == 'NICKNAME':
                 client.send(nickname.encode('utf-8'))
+            elif "NUMBEROFUSERS" in message:
+                users = message.split("####")[1]
             else:
                 q.put(message)
 
@@ -47,6 +54,7 @@ def receive():
             print("An error occured!")
             client.close()
             break
+
 
         
 def gui():
@@ -59,59 +67,134 @@ def gui():
         updateGui(win)
 
        
+def displayInfos(win):
+    win.move(0, 0)
+    win.addstr(0, 0, "{} users |".format(users))
+    win.refresh()
+    win.addstr(0, 11, "Connecté en tant que ")
+    win.refresh()
+    win.addstr(0, 33, "{}".format(nickname), curses.color_pair(7))
+    win.refresh()
+    win.addstr(1, 0, "à l'écoute: {} | volume : {}%".format(alecoute, volume))
+    win.refresh()
+
+
+def displayMessages(win):
+    for i, m in enumerate(messages):
+        if "::::" in m:
+            userMessage(m, i, win)
+        elif "####" in m:
+            systemMessage(m, i, win)
+
+def userMessage(m, i, win):
+    arr = m.split("::::")        
+    if len(arr) > 1:
+        colorIndex = (ord(arr[0][letterColorIndex]) % 5) + 1
+        win.addstr(i + 3, 0, arr[0], curses.color_pair(colorIndex))
+        win.refresh()
+        win.addstr(i + 3, len(arr[0]) + 2, arr[1])
+        win.refresh()
+
+def systemMessage(m, i, win):
+    arr = m.split("####")        
+    if len(arr) > 1:
+        colorIndex = 0
+        win.addstr(i + 3, 0, arr[0], curses.color_pair(colorIndex))
+        win.refresh()
+        win.addstr(i + 3, len(arr[0]) + 2, arr[1])
+        win.refresh()
+
+
+
 def updateGui(win):
-
-    # notify.send_sync(
-    #     title="prout",
-    #     message="nouveau message ultra secret",
-    #     urgency=Urgency.Critical,
-    #     buttons=[
-    #         Button(title="j'ai vu, fous moi la paix"),
-    #     ],
-    # ),
-
     win.move(0, 0)
     win.clear()
-    win.refresh()
-
-    for i, m in enumerate(messages):
-        arr = m.split("::::")
-        if len(arr) > 1 and len(arr[1]) > 0:
-            colorIndex = (ord(arr[0][0]) % 5) + 1
-            win.addstr(i, 0, arr[0], curses.color_pair(colorIndex))
-            win.addstr(i, len(arr[0]) + 2, arr[1])
-    win.refresh()
+    displayInfos(win)
+    displayMessages(win)
 
 def handleMessages(message):
     global colorSequence
     global messages
-    if len(messages) > 20:
+    if len(messages) > 16:
         del messages[0]
-        del colorSequence[0]
-    colorSequence.append(random.choice(range(1, 5)))
     messages.append(message)
 
 def handleCommand(c):
-    if (c[1:] == "joke"):
-        response = requests.get("https://api.chucknorris.io/jokes/random")
-        client.send('{}::::{}'.format(nickname, response.json()['value']).encode("utf8"))
-    elif (c[1:] == "shrug"):
+    global alecoute
+    global p
+    if c[1:] == "joke":
+        jk = requests.get("https://api.chucknorris.io/jokes/random")
+        client.send('{}::::{}'.format(nickname, jk.json()['value']).encode("utf8"))
+
+    elif c[1:] == "shrug":
         client.send('{}::::{}'.format(nickname, "¯\\_(ツ)_/¯").encode("utf8"))
-    elif (c[1:] == "nolife"):
-        p.play() 
-    elif (c[1:] == "stop"):
+
+    elif c[1:] == "nolife":
         p.stop()
+        p = vlc.MediaPlayer("https://listen.nolife-radio.com/stream")
+        p.audio_set_volume(volume)
+        alecoute = "nolife radio mon gars"
+        p.play()
+
+    elif c[1:] == "culture":
+        p.stop()
+        p = vlc.MediaPlayer("http://icecast.radiofrance.fr/franceculture-lofi.mp3")
+        p.audio_set_volume(volume)
+        alecoute = "la culture"
+        p.play()
+
+    elif c[1:] == "metal":
+        p.stop()
+        p = vlc.MediaPlayer("http://radio.radiometal.com/radiometal.mp3")
+        p.audio_set_volume(volume)
+        alecoute = "la culture"
+        p.play()
+
+
+    elif c[1:] == "u":
+        setVolume("up")
+
+    elif c[1:] == "d":
+        setVolume("down")
+
+    elif c[1:] == "stop":
+        alecoute = "plus rien"
+        p.stop()
+
+    elif c[1:] == "swagg":
+        changeColor(letterColorIndex)
+
     else:
         client.send('{}'.format(c).encode("utf8"))
 
+
+def setVolume(comment):
+    global volume
+    if comment == "up":
+        if volume < 90:
+            volume += 10
+    if comment == "down":
+        if volume > 10:
+            volume -= 10        
+    p.audio_set_volume(volume)
+
+
+def changeColor(index):
+    global letterColorIndex
+    if (index > len(nickname) - 2):
+        index = 0
+    if(nickname[index] == " "):
+        index += 1
+        changeColor(index)
+    letterColorIndex += 1
+
 def write():
-    win = curses.newwin(1, 200, 23, 0)
+    win = curses.newwin(1, 200, 22, 0)
     win.keypad(True)
     curses.echo()
     win.clear()
     win.refresh()
     while True:
-        win.move(0, 0)
         c = win.getstr(0, 0)
         decoded = c.decode('utf-8')
         if len(decoded) > 1 and decoded[0] == "/":
@@ -130,6 +213,8 @@ def main(stdscr):
     curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_RED),
     curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_YELLOW),
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_MAGENTA),
+
+    curses.init_pair(7, curses.COLOR_RED, curses.COLOR_BLACK),
 
     receive_thread = threading.Thread(target=receive)
     receive_thread.start()
