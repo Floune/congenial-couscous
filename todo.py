@@ -1,7 +1,6 @@
 todos = []
 import json
 
-
 def maybeTodo():
     global todos
     try:
@@ -11,7 +10,6 @@ def maybeTodo():
                 todos.append(p)
     except:
         print("MERDE")
-
 
 def addTodo(todo):
     global todos

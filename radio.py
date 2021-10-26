@@ -15,9 +15,9 @@ radios = {
   },
 }
 
-volume = 50
 alecoute = ""
 p = vlc.MediaPlayer("https://listen.nolife-radio.com/stream")
+volume = p.audio_get_volume()
 
 
 def setVolume(comment):
@@ -47,8 +47,6 @@ def radioFrenezy(adresse, commentaire):
 def handleRadio(radio):
 	global alecoute
 	global volume
-	alecoute = ""
-	volume = 50
 	if radio == "nolife":
 	    alecoute = radioFrenezy(radios[radio]["url"], radios[radio]["commentaire"])
 

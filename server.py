@@ -3,7 +3,7 @@ import sys
 import signal
 import time
 host = ''                                                    
-port = 8767                                         
+port = 8766                                     
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)             
 server.bind((host, port))                                             
 server.listen()

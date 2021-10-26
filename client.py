@@ -1,18 +1,19 @@
 import socket, threading, queue
 import curses
 import random
-from nickname import randoum
-from curses import wrapper
 import signal
 import time
 import os
 import sys
-#from desktop_notifier import DesktopNotifier, Urgency, Button
 import requests
+#from desktop_notifier import DesktopNotifier, Urgency, Button
 from todo import *
+from datetime import datetime
 from emojis import *
 from radio import *
-
+from activity import *
+from nickname import randoum
+from curses import wrapper
 
 def handler(signum, frame):
     sys.exit(1)
@@ -31,9 +32,9 @@ activity = "chat"
 letterColorIndex = 0
 emojisNames = ["shrug", "wave", "raslefion", "nonmerci", "kill", "bizarre"]
 radios = ["metal", "culture", "nolife", "u", "d", "stop"]
-alecoute = ""
-volume = ""
-
+alecoute = "rien"
+volume = 50
+activities = {}
 
 nickname = randoum()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -125,6 +126,34 @@ def displayTodo(win):
         win.addstr(i + 2, 0, "{} - {}".format(i, todo["value"]), curses.color_pair(todo["color"]))
         win.refresh()
 
+def displayTrack(win):
+    i = 0
+    win.clear()
+    win.addstr(0, 0, "Tracker", curses.color_pair(1))
+    win.refresh()
+    keys_list = list(activities)
+    for i, (k, v) in enumerate(activities.items()):
+        if i > 0:
+            key = keys_list[i]
+            previousKey = keys_list[i - 1]
+            duree = datetime.strptime(key, '%H:%M') - datetime.strptime(previousKey, '%H:%M')
+            win.addstr(i + 2, 0, "{}".format(activities[previousKey]))
+            win.refresh()
+            win.addstr(i + 2, 20, "{}".format(duree))
+            win.refresh()
+        i+=1
+
+def iterate(iterable):
+    iterator = iter(iterable)
+    item = iterator.next()
+
+    for next_item in iterator:
+        yield item, next_item
+        item = next_item
+
+    yield item, None
+
+
 
 def updateGui(win):
     win.move(0, 0)
@@ -134,6 +163,8 @@ def updateGui(win):
         displayMessages(win)
     elif activity == "todo":
         displayTodo(win)
+    elif activity == "track":
+        displayTrack(win)
 
 def handleMessages(message):
     global messages
@@ -161,8 +192,6 @@ def handleCommand(c):
     elif c[1:] == "tab":
         handleTabs()
 
-    elif c[1:] == "todo":
-        changeActivity("todo")
 
     elif "new" in c[1:]:
         addTodo(c[1:])
@@ -171,13 +200,19 @@ def handleCommand(c):
         checkTodo(c[1:])
 
     elif "del" in c[1:]:
-        delTodo(c[1:])
+        delTodo(c[1:]) 
 
-    elif c[1:] == "delall":
-        delAllTodo()    
+    elif c[1:] == "todo":
+        changeActivity("todo")
 
     elif c[1:] == "chat":
         changeActivity("chat")
+
+    elif c[1:] == "track":
+        changeActivity("track")
+
+    elif "workon" in c[1:]:
+        newActivity(c[1:])
 
     else:
         client.send('{}'.format(c).encode("utf8"))
@@ -186,7 +221,7 @@ def handleCommand(c):
 
 def handleTabs():
     global tabinfo
-    tabinfo = tabinfo + 1 if tabinfo < 1 else 0
+    tabinfo = tabinfo + 1 if tabinfo < 2 else 0
 
 
 def changeActivity(newActivity):
@@ -222,6 +257,8 @@ def write():
 
 
 def main(stdscr):
+    global activities
+
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE),
     curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE),
     curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_GREEN),
@@ -232,6 +269,7 @@ def main(stdscr):
 
 
     maybeTodo()
+    activities = maybeActivities()
 
     receive_thread = threading.Thread(target=receive)
     receive_thread.start()
