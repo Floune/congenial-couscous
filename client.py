@@ -118,51 +118,23 @@ def systemMessage(m, i, win):
         win.refresh()
 
 def displayTodo(win):
-    win.clear()
-    win.refresh()
-    win.addstr(0, 0, "TODO list", curses.color_pair(1))
+    win.addstr(3, 0, "TODO list", curses.color_pair(1))
     win.refresh()
     for i, todo in enumerate(todos):
-        win.addstr(i + 2, 0, "{} - {}".format(i, todo["value"]), curses.color_pair(todo["color"]))
+        win.addstr(i + 5, 0, "{} - {}".format(i, todo["value"]), curses.color_pair(todo["color"]))
         win.refresh()
 
 def displayTrack(win):
-    i = 0
-    win.clear()
-    win.addstr(0, 0, "Tracker", curses.color_pair(1))
+    win.addstr(3, 0, "Tracker", curses.color_pair(1))
     win.refresh()
-    keys_list = list(activities)
-    for i, (k, v) in enumerate(activities.items()):
-        if i > 0:
-            key = keys_list[i]
-            previousKey = keys_list[i - 1]
-            duree = datetime.strptime(key, '%H:%M') - datetime.strptime(previousKey, '%H:%M')
-            win.addstr(i + 2, 0, "{}".format(activities[previousKey]))
-            win.refresh()
-            win.addstr(i + 2, 20, "{}".format(duree))
-            win.refresh()
-        else:
-            win.addstr(i + 2, 0, "{}h - début de journée sur {}".format(keys_list[i], activities[keys_list[i]]))
-
-        i+=1
-
-def iterate(iterable):
-    iterator = iter(iterable)
-    item = iterator.next()
-
-    for next_item in iterator:
-        yield item, next_item
-        item = next_item
-
-    yield item, None
-
+    trackDisplayLoop(win, activities)
 
 
 def updateGui(win):
     win.move(0, 0)
     win.clear()
+    displayInfos(win)
     if activity == "chat":
-        displayInfos(win)
         displayMessages(win)
     elif activity == "todo":
         displayTodo(win)
@@ -180,6 +152,7 @@ def handleMessages(message):
 def handleCommand(c):
     global alecoute
     global volume
+    global activities
 
     if c[1:] in emojisNames:
         emoj(nickname, c[1:], client)
@@ -216,6 +189,9 @@ def handleCommand(c):
 
     elif "workon" in c[1:]:
         newActivity(c[1:])
+
+    elif c[1:] == "jaimenti":
+        activities.popitem()
 
     else:
         client.send('{}'.format(c).encode("utf8"))

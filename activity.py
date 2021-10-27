@@ -29,4 +29,18 @@ def newActivity(activity):
 			json.dump(payload, outfile)
 	
 
-# def formatActivity(win, i, k, v):
+
+def trackDisplayLoop(win, activities):
+	keys_list = list(activities)
+	for i, (k, v) in enumerate(activities.items()):
+		if i > 0:
+			key = keys_list[i]
+			previousKey = keys_list[i - 1]
+			duree = datetime.strptime(key, '%H:%M') - datetime.strptime(previousKey, '%H:%M')
+			win.addstr(i + 5, 0, "{}".format(activities[previousKey]))
+			win.refresh()
+			win.addstr(i + 5, 20, "{}".format(duree))
+			win.refresh()
+		else:
+			win.addstr(i + 5, 0, "{}h - début de journée sur {}".format(keys_list[i], activities[keys_list[i]]))
+			win.refresh()

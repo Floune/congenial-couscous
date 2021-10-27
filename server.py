@@ -3,7 +3,7 @@ import sys
 import signal
 import time
 host = ''                                                    
-port = 8766                                     
+port = 8767                                   
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)             
 server.bind((host, port))                                             
 server.listen()
@@ -75,7 +75,7 @@ def handleCommand(c, client):
         "radios: /nolife /culture /metal",
         "controls : /stop | /u | /d ",
         "/todo | /new faire les courses | /done 0 | /del 0",
-        "/track| /workon exstim",
+        "/track| /workon exostim /jaimenti",
     ]
     if (c == "help"):
         client.send('system####{}'.format("HELP").encode('utf-8'))
