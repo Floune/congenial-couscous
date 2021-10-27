@@ -1,7 +1,7 @@
 README.md
 Chat python
 
-## Requis
+## Requis (pip install)
 
 - python-vlc
 - requests
