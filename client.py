@@ -141,6 +141,9 @@ def displayTrack(win):
             win.refresh()
             win.addstr(i + 2, 20, "{}".format(duree))
             win.refresh()
+        else:
+            win.addstr(i + 2, 0, "{}h - début de journée sur {}".format(keys_list[i], activities[keys_list[i]]))
+
         i+=1
 
 def iterate(iterable):

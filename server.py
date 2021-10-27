@@ -73,11 +73,9 @@ def handleCommand(c, client):
         "/swagg (changer sa couleur)",
         "/tab (changer l'onglet des infos)",
         "radios: /nolife /culture /metal",
-        "controls : /stop /u /d )",
-        "/todo",
-        "/new faire les courses",
-        "/done 0",
-        "/del 0",
+        "controls : /stop | /u | /d ",
+        "/todo | /new faire les courses | /done 0 | /del 0",
+        "/track| /workon exstim",
     ]
     if (c == "help"):
         client.send('system####{}'.format("HELP").encode('utf-8'))
