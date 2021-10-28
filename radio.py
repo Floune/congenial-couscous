@@ -17,7 +17,7 @@ radios = {
 
 alecoute = ""
 p = vlc.MediaPlayer("https://listen.nolife-radio.com/stream")
-volume = p.audio_get_volume()
+volume = 50
 
 
 def setVolume(comment):

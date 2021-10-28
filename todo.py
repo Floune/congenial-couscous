@@ -1,5 +1,6 @@
-todos = []
 import json
+
+from globals_ import *
 
 def maybeTodo():
     global todos

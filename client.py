@@ -6,52 +6,39 @@ import time
 import os
 import sys
 import requests
-#from desktop_notifier import DesktopNotifier, Urgency, Button
+
+from curses import wrapper
+from globals_ import *
 from todo import *
-from datetime import datetime
 from emojis import *
 from radio import *
 from activity import *
-from nickname import randoum
-from curses import wrapper
+from gui import *
+from datetime import datetime
+#from desktop_notifier import DesktopNotifier, Urgency, Button
 
 def handler(signum, frame):
     sys.exit(1)
-    client.send("____deco".encode('utf-8'))
+    client.send("____deco".encode(encodingMethod))
     curses.endwin()
 
  
 signal.signal(signal.SIGINT, handler)
-q = queue.Queue()
-#notify = DesktopNotifier()
-
-messages = []
-users = 0
-tabinfo = 0
-activity = "chat"
-letterColorIndex = 0
-emojisNames = ["shrug", "wave", "raslefion", "nonmerci", "kill", "bizarre"]
-radios = ["metal", "culture", "nolife", "u", "d", "stop"]
-alecoute = "rien"
-volume = 50
-activities = {}
-
-nickname = randoum()
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), int(os.environ.get('FLOUNE_CHAT_PORT', 5556))))
 
+q = queue.Queue()
 
 def receive():
     global users
     while True:
         try:
-            message = client.recv(1024).decode('utf-8')
+            message = client.recv(1024).decode(encodingMethod)
 
-            if message == 'NICKNAME':
-                client.send(nickname.encode('utf-8'))
-            elif "NUMBEROFUSERS" in message:
-                users = message.split("####")[1]
+            if message == nicknameRequestString:
+                client.send(nickname.encode(encodingMethod))
+            elif nbUserRequestString in message:
+                users = message.split(systemMessageSplitString)[1]
                 q.put("")
             else:
                 q.put(message)
@@ -62,8 +49,6 @@ def receive():
             client.close()
             break
 
-
-        
 def gui():
     win = curses.newwin(21, 100, 0, 0)
     win.clear()
@@ -85,6 +70,7 @@ def displayInfos(win):
         win.addstr(0, 22, "{}".format(nickname), curses.color_pair(7))
         win.refresh()
     elif tabinfo == 1:
+
         win.addstr(0, 0, "à l'écoute: {}".format(alecoute))
         win.addstr(1, 0, "volume : {}%".format(volume))
         win.refresh()
@@ -92,15 +78,15 @@ def displayInfos(win):
 
 def displayMessages(win):
     for i, m in enumerate(messages):
-        if (len(m.split("::::")) > 1 and m.split("::::")[1] == "") or len(m) < 1:
+        if (len(m.split(userMessageSplitString)) > 1 and m.split(userMessageSplitString)[1] == "") or len(m) < 1:
             del(messages[i])
-        elif "::::" in m:
+        elif userMessageSplitString in m:
             userMessage(m, i, win)
-        elif "####" in m:
+        elif systemMessageSplitString in m:
             systemMessage(m, i, win)
 
 def userMessage(m, i, win):
-    arr = m.split("::::")     
+    arr = m.split(userMessageSplitString)     
     if len(arr) > 1:
         colorIndex = (ord(arr[0][letterColorIndex]) % 5) + 1
         win.addstr(i + 3, 0, arr[0], curses.color_pair(colorIndex))
@@ -109,7 +95,7 @@ def userMessage(m, i, win):
         win.refresh()
 
 def systemMessage(m, i, win):
-    arr = m.split("####")        
+    arr = m.split(systemMessageSplitString)        
     if len(arr) > 1:
         colorIndex = 0
         win.addstr(i + 3, 0, arr[0], curses.color_pair(colorIndex))
@@ -148,7 +134,6 @@ def handleMessages(message):
     messages.append(message)
 
 
-
 def handleCommand(c):
     global alecoute
     global volume
@@ -157,7 +142,7 @@ def handleCommand(c):
     if c[1:] in emojisNames:
         emoj(nickname, c[1:], client)
 
-    elif c[1:] in radios:
+    elif c[1:] in radioCommands:
         new = handleRadio(c[1:])
         alecoute = new[0]
         volume = new[1]
@@ -218,21 +203,21 @@ def changeColor(index):
     letterColorIndex += 1
 
 def write():
-    win = curses.newwin(1, 100, 22, 0)
-    win.keypad(True)
+    writeScreen = curses.newwin(1, 100, 22, 0)
+    writeScreen.keypad(True)
+    writeScreen.clear()
+    writeScreen.refresh()
     curses.echo()
-    win.clear()
-    win.refresh()
     while True:
-        c = win.getstr(0, 0)
-        decoded = c.decode('utf-8')
+        c = writeScreen.getstr(0, 0)
+        decoded = c.decode(encodingMethod)
         if len(decoded) > 1 and decoded[0] == "/":
             handleCommand(decoded)
         else:
             message = '{}::::{}'.format(nickname, decoded)
-            client.send(message.encode('utf-8'))
-        win.clear()
-        win.refresh()
+            client.send(message.encode(encodingMethod))
+        writeScreen.clear()
+        writeScreen.refresh()
 
 
 def main(stdscr):
@@ -248,6 +233,7 @@ def main(stdscr):
 
 
     maybeTodo()
+
     activities = maybeActivities()
 
     receive_thread = threading.Thread(target=receive)
