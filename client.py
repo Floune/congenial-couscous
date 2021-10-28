@@ -70,9 +70,11 @@ def displayInfos(win):
         win.addstr(0, 22, "{}".format(nickname), curses.color_pair(7))
         win.refresh()
     elif tabinfo == 1:
-
         win.addstr(0, 0, "à l'écoute: {}".format(alecoute))
-        win.addstr(1, 0, "volume : {}%".format(volume))
+        win.refresh()
+        win.addstr(1, 0, "{}".format(songTitle))
+        win.refresh()
+        win.addstr(2, 0, "volume : {}%".format(volume))
         win.refresh()
 
 
@@ -137,6 +139,7 @@ def handleMessages(message):
 def handleCommand(c):
     global alecoute
     global volume
+    global songTitle
     global activities
 
     if c[1:] in emojisNames:
@@ -146,6 +149,7 @@ def handleCommand(c):
         new = handleRadio(c[1:])
         alecoute = new[0]
         volume = new[1]
+        songTitle = new[2]
 
     elif c[1:] == "swagg":
         changeColor(letterColorIndex)

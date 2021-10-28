@@ -4,7 +4,7 @@ nickname = randoum()
 users = 0
 tabinfo = 0
 letterColorIndex = 0
-volume = 50
+
 
 activities = {}
 activity = "chat"
@@ -20,5 +20,6 @@ systemMessageSplitString = "####"
 userMessageSplitString = "::::"
 encodingMethod = "utf-8"
 alecoute = "rien"
+songTitle = ""
 
 #notify = DesktopNotifier()
