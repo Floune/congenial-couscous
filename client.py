@@ -15,6 +15,8 @@ from radio import *
 from activity import *
 from gui import *
 from datetime import datetime
+from playsound import playsound
+
 #from desktop_notifier import DesktopNotifier, Urgency, Button
 
 def handler(signum, frame):
@@ -40,6 +42,8 @@ def receive():
             elif nbUserRequestString in message:
                 users = message.split(systemMessageSplitString)[1]
                 q.put("")
+            elif "SOUND" in message:
+                playSound(message.split(systemMessageSplitString)[1])
             else:
                 q.put(message)
 
@@ -48,6 +52,9 @@ def receive():
             print("An error occured!")
             client.close()
             break
+
+def playSound(filename):
+    playsound("{}.mp3".format(filename))
 
 def gui():
     win = curses.newwin(21, 100, 0, 0)
@@ -70,13 +77,10 @@ def displayInfos(win):
         win.addstr(0, 22, "{}".format(nickname), curses.color_pair(7))
         win.refresh()
     elif tabinfo == 1:
-        win.addstr(0, 0, "à l'écoute: {}".format(alecoute))
+        win.addstr(0, 0, "radio: {} | volume : {}%".format(alecoute, volume))
         win.refresh()
         win.addstr(1, 0, "{}".format(songTitle))
         win.refresh()
-        win.addstr(2, 0, "volume : {}%".format(volume))
-        win.refresh()
-
 
 def displayMessages(win):
     for i, m in enumerate(messages):
@@ -145,6 +149,9 @@ def handleCommand(c):
     if c[1:] in emojisNames:
         emoj(nickname, c[1:], client)
 
+    elif c[1:] == "song":
+        songTitle = updateSongTitle()
+
     elif c[1:] in radioCommands:
         new = handleRadio(c[1:])
         alecoute = new[0]
@@ -181,6 +188,9 @@ def handleCommand(c):
 
     elif c[1:] == "jaimenti":
         activities.popitem()
+
+    elif c[1:] == "prout":
+        client.send('{}'.format(c).encode("utf8"))
 
     else:
         client.send('{}'.format(c).encode("utf8"))

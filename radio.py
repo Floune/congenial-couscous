@@ -8,13 +8,15 @@ radios = {
   },
   "nolife": {
     "url": "https://listen.nolife-radio.com/stream",
-    "commentaire": "nolife mon gars"
+    "commentaire": "nolife"
   },
   "culture": {
     "url": "http://icecast.radiofrance.fr/franceculture-lofi.mp3",
     "commentaire": "la culture"
   },
 }
+radioCommands = ["metal", "culture", "nolife", "u", "d", "stop"]
+
 volume = 50
 p = mpv.MPV(input_default_bindings=True, input_vo_keyboard=True)
 
@@ -40,17 +42,36 @@ def radioFrenezy(adresse, commentaire):
 	# p.audio_set_volume(volume)
 	p.play(adresse)
 	time.sleep(3)
-	if alecoute =="culture" or alecoute =="plus rien":
+	if alecoute =="la culture" or alecoute =="plus rien":
 		title = ""
 	else:	
 		title = p.metadata["icy-title"]
 	return [alecoute, title]
 
+def updateSongTitle():
+	global p
+	global songTitle
+	if alecoute =="la culture" or alecoute =="plus rien":
+		title = ""
+	else:
+		title = p.metadata["icy-title"]
+	return title
 
 def handleRadio(radio):
 	global alecoute
 	global volume
-
+	if radio == "nolife":
+		frenz = radioFrenezy(radios[radio]["url"], radios[radio]["commentaire"])
+		alecoute = frenz[0]
+		title = frenz[1]
+	elif radio == "culture":
+		frenz = radioFrenezy(radios[radio]["url"], radios[radio]["commentaire"])
+		alecoute = frenz[0]
+		title = frenz[1]
+	elif radio == "metal":
+		frenz = radioFrenezy(radios[radio]["url"], radios[radio]["commentaire"])
+		alecoute = frenz[0]
+		title = frenz[1]
 	if radio == "u":
 	    volume = setVolume("up")
 
@@ -59,10 +80,7 @@ def handleRadio(radio):
 
 	elif radio == "stop":
 	    alecoute = "plus rien"
+	    title = ""
 	    p.stop()
-	else:
-		frenz = radioFrenezy(radios[radio]["url"], radios[radio]["commentaire"])
-		alecoute = frenz[0]
-		title = frenz[1]
-	
+
 	return [alecoute, volume, title]
