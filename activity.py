@@ -3,6 +3,7 @@ import time
 import json
 current = ""
 start = ""
+activities = {}
 
 def maybeActivities():
 	global activities
