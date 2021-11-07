@@ -4,15 +4,17 @@ nickname = randoum()
 users = 0
 tabinfo = 0
 letterColorIndex = 0
+messageYOffset = 4
 
 
 activities = {}
 activity = "chat"
 messages = []
+history = []
 todos = []
 
 emojisNames = ["shrug", "wave", "raslefion", "nonmerci", "kill", "bizarre"]
-radioCommands = ["metal", "culture", "nolife", "u", "d", "stop"]
+radioCommands = ["metal", "culture", "nolife", "stop"]
 
 nicknameRequestString = 'NICKNAME'
 nbUserRequestString = "NUMBEROFUSERS"

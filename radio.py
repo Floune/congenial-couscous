@@ -15,7 +15,7 @@ radios = {
     "commentaire": "la culture"
   },
 }
-radioCommands = ["metal", "culture", "nolife", "u", "d", "stop"]
+radioCommands = ["metal", "culture", "nolife","stop"]
 
 volume = 50
 p = mpv.MPV(input_default_bindings=True, input_vo_keyboard=True)
@@ -23,13 +23,13 @@ p = mpv.MPV(input_default_bindings=True, input_vo_keyboard=True)
 def setVolume(comment):
     global volume
     global p
-    if comment == "up":
+    if comment == "u":
         if volume < 90:
             volume += 10
-    if comment == "down":
+    if comment == "d":
         if volume > 10:
             volume -= 10        
-    # p.audio_set_volume(volume)
+    p.volume = volume
     return volume
 
 
@@ -72,15 +72,15 @@ def handleRadio(radio):
 		frenz = radioFrenezy(radios[radio]["url"], radios[radio]["commentaire"])
 		alecoute = frenz[0]
 		title = frenz[1]
-	if radio == "u":
-	    volume = setVolume("up")
-
-	elif radio == "d":
-	    volume = setVolume("down")
-
 	elif radio == "stop":
 	    alecoute = "plus rien"
 	    title = ""
 	    p.stop()
 
-	return [alecoute, volume, title]
+
+	return [alecoute, title]
+
+def handleVolume(vol):
+	global volume
+	volume = setVolume(vol)
+	return volume

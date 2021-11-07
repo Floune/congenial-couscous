@@ -95,18 +95,18 @@ def userMessage(m, i, win):
     arr = m.split(userMessageSplitString)     
     if len(arr) > 1:
         colorIndex = (ord(arr[0][letterColorIndex]) % 5) + 1
-        win.addstr(i + 3, 0, arr[0], curses.color_pair(colorIndex))
+        win.addstr(i + messageYOffset, 0, arr[0], curses.color_pair(colorIndex))
         win.refresh()
-        win.addstr(i + 3, len(arr[0]) + 2, arr[1])
+        win.addstr(i + messageYOffset, len(arr[0]) + 2, arr[1])
         win.refresh()
 
 def systemMessage(m, i, win):
     arr = m.split(systemMessageSplitString)        
     if len(arr) > 1:
         colorIndex = 0
-        win.addstr(i + 3, 0, arr[0], curses.color_pair(colorIndex))
+        win.addstr(i + messageYOffset, 0, arr[0], curses.color_pair(colorIndex))
         win.refresh()
-        win.addstr(i + 3, len(arr[0]) + 2, arr[1])
+        win.addstr(i + messageYOffset, len(arr[0]) + 2, arr[1])
         win.refresh()
 
 def displayTodo(win):
@@ -146,50 +146,53 @@ def handleCommand(c):
     global songTitle
     global activities
 
-    if c[1:] in emojisNames:
-        emoj(nickname, c[1:], client)
+    command = c[1:]
+    if command in emojisNames:
+        emoj(nickname, command, client)
 
-    elif c[1:] == "song":
+    elif command == "song":
         songTitle = updateSongTitle()
 
-    elif c[1:] in radioCommands:
-        new = handleRadio(c[1:])
+    elif command in radioCommands:
+        new = handleRadio(command)
         alecoute = new[0]
-        volume = new[1]
-        songTitle = new[2]
+        songTitle = new[1]
 
-    elif c[1:] == "swagg":
+    elif command == "u" or command == "d":
+        volume = setVolume(command)
+
+    elif command == "swagg":
         changeColor(letterColorIndex)
 
-    elif c[1:] == "tab":
+    elif command == "tab":
         handleTabs()
 
 
-    elif "new" in c[1:]:
-        addTodo(c[1:])
+    elif "new" in command:
+        addTodo(command)
 
-    elif "done" in c[1:]:
-        checkTodo(c[1:])
+    elif "done" in command:
+        checkTodo(command)
 
-    elif "del" in c[1:]:
-        delTodo(c[1:]) 
+    elif "del" in command:
+        delTodo(command) 
 
-    elif c[1:] == "todo":
+    elif command == "todo":
         changeActivity("todo")
 
-    elif c[1:] == "chat":
+    elif command == "chat":
         changeActivity("chat")
 
-    elif c[1:] == "track":
+    elif command == "track":
         changeActivity("track")
 
-    elif "workon" in c[1:]:
-        newActivity(c[1:])
+    elif "workon" in command:
+        newActivity(command)
 
-    elif c[1:] == "jaimenti":
+    elif command == "jaimenti":
         activities.popitem()
 
-    elif c[1:] == "prout":
+    elif command == "prout":
         client.send('{}'.format(c).encode("utf8"))
 
     else:
