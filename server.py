@@ -72,7 +72,7 @@ def handleCommand(c, client):
         "/shrug /wave /raslefion /nonmerci /kill /bizarre",
         "/swagg (changer sa couleur)",
         "/tab (changer l'onglet des infos)",
-        "radios: /nolife /culture /metal",
+        "radios: /nolife /culture /metal /japon /mongol",
         "controls : /stop | /u | /d | /song (récupère la chanson/le programme)",
         "/todo | /new faire les courses | /done 0 | /del 0",
         "/track| /workon exostim /jaimenti",

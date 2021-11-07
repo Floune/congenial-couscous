@@ -14,7 +14,7 @@ history = []
 todos = []
 
 emojisNames = ["shrug", "wave", "raslefion", "nonmerci", "kill", "bizarre"]
-radioCommands = ["metal", "culture", "nolife", "stop"]
+radioCommands = ["metal", "culture", "nolife", "japon", "mongol", "stop"]
 
 nicknameRequestString = 'NICKNAME'
 nbUserRequestString = "NUMBEROFUSERS"

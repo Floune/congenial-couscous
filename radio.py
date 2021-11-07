@@ -14,8 +14,16 @@ radios = {
     "url": "http://icecast.radiofrance.fr/franceculture-lofi.mp3",
     "commentaire": "la culture"
   },
+  "japon": {
+    "url": "http://121.1.243.147:8050/broadwave.mp3",
+    "commentaire": "le japon"
+  },
+  "mongol": {
+    "url": "http://202.131.233.34:8014/stream",
+    "commentaire": "la mongolie"
+  },
 }
-radioCommands = ["metal", "culture", "nolife","stop"]
+radioCommands = ["metal", "culture", "nolife","japon", "mongol", "stop"]
 
 volume = 50
 p = mpv.MPV(input_default_bindings=True, input_vo_keyboard=True)
@@ -42,7 +50,7 @@ def radioFrenezy(adresse, commentaire):
 	# p.audio_set_volume(volume)
 	p.play(adresse)
 	time.sleep(3)
-	if alecoute =="la culture" or alecoute =="plus rien":
+	if alecoute =="la culture" or alecoute =="plus rien" or alecoute =="le japon":
 		title = ""
 	else:	
 		title = p.metadata["icy-title"]
@@ -51,7 +59,7 @@ def radioFrenezy(adresse, commentaire):
 def updateSongTitle():
 	global p
 	global songTitle
-	if alecoute =="la culture" or alecoute =="plus rien":
+	if alecoute =="la culture" or alecoute =="plus rien" or alecoute =="le japon":
 		title = ""
 	else:
 		title = p.metadata["icy-title"]
@@ -69,6 +77,14 @@ def handleRadio(radio):
 		alecoute = frenz[0]
 		title = frenz[1]
 	elif radio == "metal":
+		frenz = radioFrenezy(radios[radio]["url"], radios[radio]["commentaire"])
+		alecoute = frenz[0]
+		title = frenz[1]
+	elif radio == "japon":
+		frenz = radioFrenezy(radios[radio]["url"], radios[radio]["commentaire"])
+		alecoute = frenz[0]
+		title = frenz[1]
+	elif radio == "mongol":
 		frenz = radioFrenezy(radios[radio]["url"], radios[radio]["commentaire"])
 		alecoute = frenz[0]
 		title = frenz[1]
