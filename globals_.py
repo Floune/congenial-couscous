@@ -4,8 +4,9 @@ nickname = randoum()
 users = 0
 tabinfo = 0
 letterColorIndex = 0
-messageYOffset = 4
-
+messageYOffset = 5
+rows = 0
+cols = 0
 
 activities = {}
 activity = "chat"

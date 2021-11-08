@@ -57,7 +57,11 @@ def playSound(filename):
     playsound("{}.mp3".format(filename))
 
 def gui():
-    win = curses.newwin(21, 100, 0, 0)
+    global rows
+    global rows
+    # win = curses.newwin(rows, cols, 0, 0)
+    win = curses.initscr()
+    rows, cols = win.getmaxyx()
     win.clear()
     win.refresh()
     while True:
@@ -70,6 +74,10 @@ def displayInfos(win):
     if tabinfo == 0:
         mes = "participant" if users == "1" else "participants"
         win.move(0, 0)
+        win.addstr(2, 0, "radio: {} | volume : {}%".format(alecoute, volume))
+        win.refresh()
+        win.addstr(3, 0, "{}".format(songTitle))
+        win.refresh()
         win.addstr(1, 0, "{} {}".format(users, mes))
         win.refresh()
         win.addstr(0, 0, "Connecté en tant que ")
@@ -77,9 +85,11 @@ def displayInfos(win):
         win.addstr(0, 22, "{}".format(nickname), curses.color_pair(7))
         win.refresh()
     elif tabinfo == 1:
-        win.addstr(0, 0, "radio: {} | volume : {}%".format(alecoute, volume))
+        win.addstr(0, 0, "radio: {}".format(alecoute))
         win.refresh()
-        win.addstr(1, 0, "{}".format(songTitle))
+        win.addstr(2, 0, "{}".format(songTitle))
+        win.refresh()
+        win.addstr(1, 0, "volume : {}%".format(volume))
         win.refresh()
 
 def displayMessages(win):
@@ -121,6 +131,17 @@ def displayTrack(win):
     win.refresh()
     trackDisplayLoop(win, activities)
 
+def displayImageBoard(win):
+    win.clear()
+    i = 0
+    j = 0
+    outputt = climage.convert('test.jpeg', width=20, is_unicode=True)
+
+    win.addstr(10, 0, outputt)
+
+    win.refresh()
+
+
 
 def updateGui(win):
     win.move(0, 0)
@@ -132,10 +153,12 @@ def updateGui(win):
         displayTodo(win)
     elif activity == "track":
         displayTrack(win)
+    elif activity == "board":
+        displayImageBoard(win)
 
 def handleMessages(message):
     global messages
-    if len(messages) > 16:
+    if len(messages) > rows - 11:
         del messages[0]
     messages.append(message)
 
@@ -195,6 +218,9 @@ def handleCommand(c):
     elif command == "prout":
         client.send('{}'.format(c).encode("utf8"))
 
+    elif command == "board":
+        changeActivity("board")
+
     else:
         client.send('{}'.format(c).encode("utf8"))
 
@@ -220,7 +246,7 @@ def changeColor(index):
     letterColorIndex += 1
 
 def write():
-    writeScreen = curses.newwin(1, 100, 22, 0)
+    writeScreen = curses.newwin(2, cols, rows - 3, 0)
     writeScreen.keypad(True)
     writeScreen.clear()
     writeScreen.refresh()
@@ -256,10 +282,11 @@ def main(stdscr):
     receive_thread = threading.Thread(target=receive)
     receive_thread.start()
 
-    write_thread = threading.Thread(target=write)
-    write_thread.start()
     
     gui_thread = threading.Thread(target=gui)
     gui_thread.start()
+
+    write_thread = threading.Thread(target=write)
+    write_thread.start()
 
 wrapper(main)
