@@ -28,7 +28,6 @@ def handler(signum, frame):
 signal.signal(signal.SIGINT, handler)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), int(os.environ.get('FLOUNE_CHAT_PORT', 5556))))
-
 q = queue.Queue()
 
 def receive():
@@ -100,31 +99,29 @@ def displayMessages(win):
             userMessage(m, i, win)
         elif systemMessageSplitString in m:
             systemMessage(m, i, win)
+        win.refresh()
+
 
 def userMessage(m, i, win):
     arr = m.split(userMessageSplitString)     
     if len(arr) > 1:
         colorIndex = (ord(arr[0][letterColorIndex]) % 5) + 1
         win.addstr(i + messageYOffset, 0, arr[0], curses.color_pair(colorIndex))
-        win.refresh()
         win.addstr(i + messageYOffset, len(arr[0]) + 2, arr[1])
-        win.refresh()
 
 def systemMessage(m, i, win):
     arr = m.split(systemMessageSplitString)        
     if len(arr) > 1:
         colorIndex = 0
         win.addstr(i + messageYOffset, 0, arr[0], curses.color_pair(colorIndex))
-        win.refresh()
         win.addstr(i + messageYOffset, len(arr[0]) + 2, arr[1])
-        win.refresh()
 
 def displayTodo(win):
-    win.addstr(3, 0, "TODO list", curses.color_pair(1))
+    win.addstr(4, 0, "TODO list", curses.color_pair(1))
     win.refresh()
     for i, todo in enumerate(todos):
-        win.addstr(i + 5, 0, "{} - {}".format(i, todo["value"]), curses.color_pair(todo["color"]))
-        win.refresh()
+        win.addstr(i + messageYOffset, 0, "{} - {}".format(i, todo["value"]), curses.color_pair(todo["color"]))
+    win.refresh()
 
 def displayTrack(win):
     win.addstr(3, 0, "Tracker", curses.color_pair(1))
@@ -137,7 +134,7 @@ def displayImageBoard(win):
     j = 0
     outputt = climage.convert('test.jpeg', width=20, is_unicode=True)
 
-    win.addstr(10, 0, outputt)
+    win.addstr(10, 0, u"{}".format(outputt))
 
     win.refresh()
 
