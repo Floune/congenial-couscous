@@ -27,6 +27,7 @@ radioCommands = ["metal", "culture", "nolife","japon", "mongol", "stop"]
 
 volume = 50
 p = mpv.MPV(input_default_bindings=True, input_vo_keyboard=True)
+p.volume = volume
 
 def setVolume(comment):
     global volume
