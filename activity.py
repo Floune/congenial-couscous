@@ -37,8 +37,8 @@ def trackDisplayLoop(win, activities):
 			key = keys_list[i]
 			previousKey = keys_list[i - 1]
 			duree = datetime.strptime(key, '%H:%M:%S') - datetime.strptime(previousKey, '%H:%M:%S')
-			win.addstr(i + 5, 0, "{}".format(activities[previousKey]))
-			win.addstr(i + 5, 20, "{}".format(duree))
+			win.addstr(i + 7, 0, "{}".format(activities[previousKey]))
+			win.addstr(i + 7, 20, "{}".format(duree))
 		else:
-			win.addstr(i + 5, 0, "{} - début de journée sur {}".format(keys_list[i], activities[keys_list[i]]))
+			win.addstr(i + 7, 0, "{} - début de journée sur {}".format(keys_list[i], activities[keys_list[i]]))
 		win.refresh()

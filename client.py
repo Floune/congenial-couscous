@@ -6,6 +6,7 @@ import time
 import os
 import sys
 import requests
+import climage
 
 from curses import wrapper
 from globals_ import *
@@ -117,25 +118,21 @@ def systemMessage(m, i, win):
         win.addstr(i + messageYOffset, len(arr[0]) + 2, arr[1])
 
 def displayTodo(win):
-    win.addstr(4, 0, "TODO list", curses.color_pair(1))
+    win.addstr(5, 0, "TODO list", curses.color_pair(1))
     win.refresh()
     for i, todo in enumerate(todos):
-        win.addstr(i + messageYOffset, 0, "{} - {}".format(i, todo["value"]), curses.color_pair(todo["color"]))
+        win.addstr(i + messageYOffset + 2, 0, "{} - {}".format(i, todo["value"]), curses.color_pair(todo["color"]))
     win.refresh()
 
 def displayTrack(win):
-    win.addstr(3, 0, "Tracker", curses.color_pair(1))
+    win.addstr(5, 0, "Tracker", curses.color_pair(1))
     win.refresh()
     trackDisplayLoop(win, activities)
 
 def displayImageBoard(win):
     win.clear()
-    i = 0
-    j = 0
-    outputt = climage.convert('test.jpeg', width=20, is_unicode=True)
-
-    win.addstr(10, 0, u"{}".format(outputt))
-
+    outputt = climage.convert('test.jpeg', width=20)
+    chunks = [outputt[i:i + 20] for i in range(0, len(outputt), 20)]
     win.refresh()
 
 
