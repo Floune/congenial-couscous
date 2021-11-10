@@ -1,11 +1,10 @@
-README.md
-Chat python
+# Microbook
 
 ## Requis (pip install)
 
 - python-vlc
 - requests
-
+- climage
 
 Pour lancer le client : `FLOUNE_CHAT_SERVER=(demander à floune) FLOUNE_CHAT_PORT=5556 python3 client.py`
 
