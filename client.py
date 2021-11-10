@@ -6,7 +6,7 @@ import time
 import os
 import sys
 import requests
-import climage
+import pyw3mimg
 
 from curses import wrapper
 from globals_ import *
@@ -16,20 +16,92 @@ from radio import *
 from activity import *
 from gui import *
 from datetime import datetime
+from datetime import timedelta
 from playsound import playsound
 
 #from desktop_notifier import DesktopNotifier, Urgency, Button
 
 def handler(signum, frame):
-    sys.exit(1)
     client.send("____deco".encode(encodingMethod))
     curses.endwin()
+    sys.exit(1)
 
- 
+
+
+def startPomodoro():
+    global pomodoroRunning
+    global pomodoroStart
+    global pomodoroEnd
+    global timer
+    global tabinfo
+    tabinfo = 2
+    if pomodoroRunning == False:
+        pomodoroRunning = True
+
+        pomodoroStart = time.strftime("%H:%M:%S", time.localtime())
+        pomodoroEnd = (datetime.strptime(pomodoroStart, "%H:%M:%S") + timedelta(minutes=25)).strftime("%H:%M:%S")
+        timer.start()
+
+def endPomodoro():
+    global pomodoroRunning
+    global timer
+    global pauseRunning
+    global pomodoroCount
+
+    pomodoroCount+=1
+    pomodoroRunning = False
+    timer.cancel()
+    del timer
+    timer = threading.Timer(pomodoroLength, endPomodoro)
+    if pauseRunning == False:
+        pauseRunning = True
+        pauseTimer.start()
+    q.put('')
+
+def cancelPomodoro():
+    global pomodoroRunning
+    global timer
+    global pauseRunning
+    global pomodoroCount
+
+    if pomodoroCount > 0:
+        pomodoroCount-=1
+
+    pomodoroRunning = False
+    timer.cancel()
+    del timer
+    timer = threading.Timer(pomodoroLength, endPomodoro)
+
+    global pauseRunning
+    global pauseTimer
+    pauseRunning = False
+    pauseTimer.cancel()
+    del pauseTimer
+    pauseTimer = threading.Timer(pauseLength, endPause)
+    q.put('')  
+
+def endPause():
+    global pauseRunning
+    global pauseTimer
+    pauseRunning = False
+    pauseTimer.cancel()
+    del pauseTimer
+    pauseTimer = threading.Timer(pauseLength, endPause)
+    startPomodoro()
+    q.put('')
+
+def resetPomodoro():
+    global pomodoroCount
+    pomodoroCount = 0
+    cancelPomodoro()
+
 signal.signal(signal.SIGINT, handler)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), int(os.environ.get('FLOUNE_CHAT_PORT', 5556))))
 q = queue.Queue()
+timer = threading.Timer(pomodoroLength, endPomodoro)
+pauseTimer = threading.Timer(pauseLength, endPause)
+
 
 def receive():
     global users
@@ -91,6 +163,15 @@ def displayInfos(win):
         win.refresh()
         win.addstr(1, 0, "volume : {}%".format(volume))
         win.refresh()
+    elif tabinfo == 2:
+        win.addstr(0, 0, "Pomodoro - {} minutes".format(pomodoroLength / 60), curses.color_pair(8))
+        if pomodoroRunning == False:
+            win.addstr(1, 0, "En pause")
+            win.addstr(2, 0, "effectués: {}".format(pomodoroCount))
+        else:
+            win.addstr(1, 0, "{} ========> {}".format(pomodoroStart, pomodoroEnd))
+        win.refresh()
+
 
 def displayMessages(win):
     for i, m in enumerate(messages):
@@ -131,11 +212,11 @@ def displayTrack(win):
 
 def displayImageBoard(win):
     win.clear()
-    outputt = climage.convert('test.jpeg', width=20)
-    chunks = [outputt[i:i + 20] for i in range(0, len(outputt), 20)]
+    # outputt = repr(climage.convert('test.jpeg', width=20, is_unicode=True))
+    # win.addstr("{}".format(outputt))
+    display = pyw3mimg.W3MImageDisplay()
+    display.draw('/home/floune/dev/fun/ultrachat/test.jpeg', n=1, x=0, y=0)
     win.refresh()
-
-
 
 def updateGui(win):
     win.move(0, 0)
@@ -215,10 +296,21 @@ def handleCommand(c):
     elif command == "board":
         changeActivity("board")
 
+    elif command == "pomodoro":
+        startPomodoro()
+
+    elif command == "cancel":
+        cancelPomodoro()
+    
+    elif command == "reset":
+        resetPomodoro()
+    
     else:
-        client.send('{}'.format(c).encode("utf8"))
+        client.send('{}'.format(c).encode("utf8")) #commande gérée par le serveur
 
     q.put("")
+
+
 
 def handleTabs():
     global tabinfo
@@ -257,9 +349,17 @@ def write():
         writeScreen.refresh()
 
 
+def startPause():
+    global pauseRunning
+    global pauseStart
+    global pauseTimer
+    if pauseRunning == False:
+        pauseRunning = True
+        pauseStart = time.strftime("%H:%M:%S", time.localtime())
+        pauseTimer.start()
+
 def main(stdscr):
     global activities
-
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE),
     curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE),
     curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_GREEN),
@@ -267,20 +367,17 @@ def main(stdscr):
     curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_YELLOW),
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_MAGENTA),
     curses.init_pair(7, curses.COLOR_RED, curses.COLOR_BLACK),
-
-
+    curses.init_pair(8, curses.COLOR_BLUE, curses.COLOR_BLACK),
     maybeTodo()
-
     activities = maybeActivities()
-
     receive_thread = threading.Thread(target=receive)
     receive_thread.start()
-
-    
     gui_thread = threading.Thread(target=gui)
     gui_thread.start()
-
     write_thread = threading.Thread(target=write)
     write_thread.start()
 
-wrapper(main)
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGINT, handler)
+    wrapper(main)

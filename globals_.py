@@ -8,6 +8,17 @@ messageYOffset = 5
 rows = 0
 cols = 0
 
+pomodoroRunning = False
+pauseRunning = False
+pomodoroCount = 0
+pomodoroLength = 60 * 25
+pomodoroEnd = ""
+# pomodoroLength = 3
+pomodoroStart = ""
+pauseStart = ""
+pauseLength = 60 * 5
+# pauseLength = 3
+
 activities = {}
 activity = "chat"
 messages = []
