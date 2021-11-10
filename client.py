@@ -6,7 +6,7 @@ import time
 import os
 import sys
 import requests
-import pyw3mimg
+# import pyw3mimg
 
 from curses import wrapper
 from globals_ import *
@@ -214,8 +214,8 @@ def displayImageBoard(win):
     win.clear()
     # outputt = repr(climage.convert('test.jpeg', width=20, is_unicode=True))
     # win.addstr("{}".format(outputt))
-    display = pyw3mimg.W3MImageDisplay()
-    display.draw('/home/floune/dev/fun/ultrachat/test.jpeg', n=1, x=0, y=0)
+    # display = pyw3mimg.W3MImageDisplay()
+    # display.draw('/home/floune/dev/fun/ultrachat/test.jpeg', n=1, x=0, y=0)
     win.refresh()
 
 def updateGui(win):
