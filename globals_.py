@@ -36,6 +36,6 @@ encodingMethod = "utf-8"
 alecoute = "rien"
 songTitle = ""
 
-client = ""
+audioClient = ""
 audioMode = False
 #notify = DesktopNotifier()

@@ -8,15 +8,16 @@ import pyaudio
 class Client(Thread):
     def __init__(self):
         Thread.__init__(self)
+        
+
+    def run(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
         while 1:
             try:
                 self.target_ip = os.environ.get('FLOUNE_CHAT_SERVER', 'localhost')
                 self.target_port = int(os.environ.get('FLOUNE_AUDIO_PORT', 5557))
-
                 self.s.connect((self.target_ip, self.target_port))
-
                 break
             except:
                 print("Couldn't connect to server")
@@ -54,4 +55,8 @@ class Client(Thread):
             except:
                 pass
 
-    
+    def abortMission(self):
+        self.playing_stream.stop_stream()
+        self.recording_stream.close()
+        self.p.terminate()
+

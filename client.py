@@ -23,10 +23,12 @@ from audioclient import *
 #from desktop_notifier import DesktopNotifier, Urgency, Button
 
 def handler(signum, frame):
-    client.send("____deco".encode(encodingMethod))
-    curses.endwin()
+    global audioClient
+    global audioMode
+    del audioClient
+    audioMode = False
     sys.exit(1)
-
+    
 
 signal.signal(signal.SIGINT, handler)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -35,6 +37,7 @@ q = queue.Queue()
 
 def receive():
     global users
+    global client
     while True:
         try:
             message = client.recv(1024).decode(encodingMethod)
@@ -48,8 +51,6 @@ def receive():
                 playSound(message.split(systemMessageSplitString)[1])
             else:
                 q.put(message)
-
-
         except:
             print("An error occured!")
             client.close()
@@ -86,7 +87,7 @@ def displayInfos(win):
         win.refresh()
         win.addstr(0, 22, "{}".format(nickname), curses.color_pair(7))
         win.refresh()
-        win.addstr(0, 23 + len(nickname), "audio: {}".format(odio))
+        win.addstr(0, 23 + len(nickname), "vocal {}".format(odio))
         win.refresh()
     elif tabinfo == 1:
         win.addstr(0, 0, "radio: {}".format(alecoute))
@@ -235,17 +236,16 @@ def handleCommand(c):
 
 def handleVocal():
     global audioMode
-    global client
+    global audioClient
     if audioMode == False:
         audioMode = True
-        client = Client()
-        client.start()
+        audioClient = Client()
+        audioClient.start()
         q.put('')
-
     else:
-        client.join()
-        del client
         audioMode = False
+        audioClient.abortMission()
+        del audioClient
         q.put('')
 
 def handleTabs():
