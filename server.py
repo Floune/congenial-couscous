@@ -2,7 +2,6 @@ import socket, threading
 import sys
 import signal
 import time
-from audioserver import *
 host = ''                                                    
 port = 8767                                   
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)             
@@ -96,5 +95,4 @@ def handleCommand(c, client):
         client.send('system#### /help pour la liste des commandes'.encode('utf-8'))
 
 connect()
-startAudioServer()
 

@@ -18,6 +18,7 @@ from gui import *
 from datetime import datetime
 from datetime import timedelta
 from playsound import playsound
+from audioclient import *
 
 #from desktop_notifier import DesktopNotifier, Urgency, Button
 
@@ -27,81 +28,10 @@ def handler(signum, frame):
     sys.exit(1)
 
 
-
-def startPomodoro():
-    global pomodoroRunning
-    global pomodoroStart
-    global pomodoroEnd
-    global timer
-    global tabinfo
-    tabinfo = 2
-    if pomodoroRunning == False:
-        pomodoroRunning = True
-
-        pomodoroStart = time.strftime("%H:%M:%S", time.localtime())
-        pomodoroEnd = (datetime.strptime(pomodoroStart, "%H:%M:%S") + timedelta(minutes=25)).strftime("%H:%M:%S")
-        timer.start()
-
-def endPomodoro():
-    global pomodoroRunning
-    global timer
-    global pauseRunning
-    global pomodoroCount
-
-    pomodoroCount+=1
-    pomodoroRunning = False
-    timer.cancel()
-    del timer
-    timer = threading.Timer(pomodoroLength, endPomodoro)
-    if pauseRunning == False:
-        pauseRunning = True
-        pauseTimer.start()
-    q.put('')
-
-def cancelPomodoro():
-    global pomodoroRunning
-    global timer
-    global pauseRunning
-    global pomodoroCount
-
-    if pomodoroCount > 0:
-        pomodoroCount-=1
-
-    pomodoroRunning = False
-    timer.cancel()
-    del timer
-    timer = threading.Timer(pomodoroLength, endPomodoro)
-
-    global pauseRunning
-    global pauseTimer
-    pauseRunning = False
-    pauseTimer.cancel()
-    del pauseTimer
-    pauseTimer = threading.Timer(pauseLength, endPause)
-    q.put('')  
-
-def endPause():
-    global pauseRunning
-    global pauseTimer
-    pauseRunning = False
-    pauseTimer.cancel()
-    del pauseTimer
-    pauseTimer = threading.Timer(pauseLength, endPause)
-    startPomodoro()
-    q.put('')
-
-def resetPomodoro():
-    global pomodoroCount
-    pomodoroCount = 0
-    cancelPomodoro()
-
 signal.signal(signal.SIGINT, handler)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), int(os.environ.get('FLOUNE_CHAT_PORT', 5556))))
 q = queue.Queue()
-timer = threading.Timer(pomodoroLength, endPomodoro)
-pauseTimer = threading.Timer(pauseLength, endPause)
-
 
 def receive():
     global users
@@ -131,7 +61,6 @@ def playSound(filename):
 def gui():
     global rows
     global rows
-    # win = curses.newwin(rows, cols, 0, 0)
     win = curses.initscr()
     rows, cols = win.getmaxyx()
     win.clear()
@@ -143,6 +72,7 @@ def gui():
 
        
 def displayInfos(win):
+    odio = "activé" if audioMode == True else "désactivé"
     if tabinfo == 0:
         mes = "participant" if users == "1" else "participants"
         win.move(0, 0)
@@ -156,6 +86,8 @@ def displayInfos(win):
         win.refresh()
         win.addstr(0, 22, "{}".format(nickname), curses.color_pair(7))
         win.refresh()
+        win.addstr(0, 23 + len(nickname), "audio: {}".format(odio))
+        win.refresh()
     elif tabinfo == 1:
         win.addstr(0, 0, "radio: {}".format(alecoute))
         win.refresh()
@@ -163,14 +95,7 @@ def displayInfos(win):
         win.refresh()
         win.addstr(1, 0, "volume : {}%".format(volume))
         win.refresh()
-    elif tabinfo == 2:
-        win.addstr(0, 0, "Pomodoro - {} minutes".format(pomodoroLength / 60), curses.color_pair(8))
-        if pomodoroRunning == False:
-            win.addstr(1, 0, "En pause")
-            win.addstr(2, 0, "effectués: {}".format(pomodoroCount))
-        else:
-            win.addstr(1, 0, "{} ========> {}".format(pomodoroStart, pomodoroEnd))
-        win.refresh()
+ 
 
 
 def displayMessages(win):
@@ -299,11 +224,8 @@ def handleCommand(c):
     elif command == "pomodoro":
         startPomodoro()
 
-    elif command == "cancel":
-        cancelPomodoro()
-    
-    elif command == "reset":
-        resetPomodoro()
+    elif command == "vocal":
+        handleVocal()
     
     else:
         client.send('{}'.format(c).encode("utf8")) #commande gérée par le serveur
@@ -311,6 +233,20 @@ def handleCommand(c):
     q.put("")
 
 
+def handleVocal():
+    global audioMode
+    global client
+    if audioMode == False:
+        audioMode = True
+        client = Client()
+        client.start()
+        q.put('')
+
+    else:
+        client.join()
+        del client
+        audioMode = False
+        q.put('')
 
 def handleTabs():
     global tabinfo
@@ -348,15 +284,6 @@ def write():
         writeScreen.clear()
         writeScreen.refresh()
 
-
-def startPause():
-    global pauseRunning
-    global pauseStart
-    global pauseTimer
-    if pauseRunning == False:
-        pauseRunning = True
-        pauseStart = time.strftime("%H:%M:%S", time.localtime())
-        pauseTimer.start()
 
 def main(stdscr):
     global activities

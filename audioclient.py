@@ -1,17 +1,19 @@
 #!/usr/bin/python3
-
+import os
 import socket
 import threading
+from threading import Thread
 import pyaudio
 
-class Client:
+class Client(Thread):
     def __init__(self):
+        Thread.__init__(self)
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
         while 1:
             try:
-                self.target_ip = "127.0.0.1"
-                self.target_port = 8768
+                self.target_ip = os.environ.get('FLOUNE_CHAT_SERVER', 'localhost')
+                self.target_port = int(os.environ.get('FLOUNE_AUDIO_PORT', 5557))
 
                 self.s.connect((self.target_ip, self.target_port))
 
@@ -52,4 +54,4 @@ class Client:
             except:
                 pass
 
-client = Client()
+    
