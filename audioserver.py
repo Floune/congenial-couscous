@@ -28,7 +28,7 @@ class Server:
         
         while True:
             c, addr = self.s.accept()
-
+            self.c = c
             self.connections.append(c)
 
             threading.Thread(target=self.handle_client,args=(c,addr,)).start()
@@ -47,7 +47,10 @@ class Server:
                 data = c.recv(1024)
                 self.broadcast(c, data)
             
-            except socket.error:
-                c.close()
+            except:
+                self.terminate()
+
+    def terminate(self):
+        self.c.close()
 
 server = Server()

@@ -1,6 +1,8 @@
 from nickname import randoum
 nickname = randoum()
 
+stdscr = ""
+
 users = 0
 tabinfo = 0
 letterColorIndex = 0
@@ -36,6 +38,5 @@ encodingMethod = "utf-8"
 alecoute = "rien"
 songTitle = ""
 
-audioClient = ""
 audioMode = False
 #notify = DesktopNotifier()

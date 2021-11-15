@@ -23,13 +23,9 @@ from audioclient import *
 #from desktop_notifier import DesktopNotifier, Urgency, Button
 
 def handler(signum, frame):
-    global audioClient
-    global audioMode
-    del audioClient
-    audioMode = False
     sys.exit(1)
     
-
+audioClient = Client()
 signal.signal(signal.SIGINT, handler)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), int(os.environ.get('FLOUNE_CHAT_PORT', 5556))))
@@ -237,21 +233,20 @@ def handleCommand(c):
 def handleVocal():
     global audioMode
     global audioClient
+    global std
     if audioMode == False:
         audioMode = True
-        audioClient = Client()
+        curses.savetty()
         audioClient.start()
         q.put('')
-    else:
+    else:        
         audioMode = False
         audioClient.abortMission()
-        del audioClient
-        q.put('')
+        curses.resetty()
 
 def handleTabs():
     global tabinfo
     tabinfo = tabinfo + 1 if tabinfo < 2 else 0
-
 
 def changeActivity(newActivity):
     global activity
@@ -285,8 +280,10 @@ def write():
         writeScreen.refresh()
 
 
-def main(stdscr):
+def main(gru):
+    global stdscr
     global activities
+    stdscr = gru
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE),
     curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE),
     curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_GREEN),
