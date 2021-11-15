@@ -239,14 +239,17 @@ def handleVocal():
         curses.savetty()
         audioClient.start()
         q.put('')
-    else:        
-        audioMode = False
+    else:
         audioClient.abortMission()
+        del audioClient
+        audioMode = False
+        audioClient = Client()
         curses.resetty()
 
 def handleTabs():
     global tabinfo
     tabinfo = tabinfo + 1 if tabinfo < 2 else 0
+
 
 def changeActivity(newActivity):
     global activity
