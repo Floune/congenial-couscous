@@ -29,7 +29,8 @@ def broadcast(sock, data):
             try:
                 client.send(data)
             except:
-                pass
+                terminate(c)
+
 
 def handle_client(c,addr):
     while 1:
@@ -42,6 +43,10 @@ def handle_client(c,addr):
             break
 
 def terminate(c):
+    print(len(connections))
     c.close()
+    connections.remove(c)
+    print(len(connections))
+
 
 accept_connections()

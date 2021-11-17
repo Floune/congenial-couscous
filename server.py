@@ -38,6 +38,7 @@ def handle(client):
         except:   
 
             deco(client)
+            print("breaking")
             break
 
 #Connection
@@ -59,9 +60,12 @@ def connect():
         thread.start()
 
 def deco(client):
+    print(len(clients))
     index = clients.index(client)
     clients.remove(client)
     client.close()
+    print(len(clients))
+    
     nickname = nicknames[index]
     broadcast('{}::::left!'.format(nickname).encode('utf-8'))
     nicknames.remove(nickname)
