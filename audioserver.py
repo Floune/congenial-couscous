@@ -3,54 +3,45 @@
 import socket
 import threading
 
-class Server:
-    def __init__(self):
-            self.ip = ""
-            while 1:
-                try:
-                    self.port = 8768
+ip = ""
+port = 8768
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind((ip, port))
+connections = []
 
-                    self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    self.s.bind((self.ip, self.port))
 
-                    break
-                except:
-                    print("Couldn't bind to that port")
 
-            self.connections = []
-            self.accept_connections()
+def accept_connections():
+    s.listen(100)
 
-    def accept_connections(self):
-        self.s.listen(100)
+    print('Running on IP: '+ip)
+    print('Running on port: '+str(port))
+    
+    while True:
+        c, addr = s.accept()
+        connections.append(c)
 
-        print('Running on IP: '+self.ip)
-        print('Running on port: '+str(self.port))
-        
-        while True:
-            c, addr = self.s.accept()
-            self.c = c
-            self.connections.append(c)
-
-            threading.Thread(target=self.handle_client,args=(c,addr,)).start()
-        
-    def broadcast(self, sock, data):
-        for client in self.connections:
-            if client != self.s and client != sock:
-                try:
-                    client.send(data)
-                except:
-                    pass
-
-    def handle_client(self,c,addr):
-        while 1:
+        threading.Thread(target=handle_client,args=(c,addr,)).start()
+    
+def broadcast(sock, data):
+    for client in connections:
+        if client != s and client != sock:
             try:
-                data = c.recv(1024)
-                self.broadcast(c, data)
-            
+                client.send(data)
             except:
-                self.terminate()
+                pass
 
-    def terminate(self):
-        self.c.close()
+def handle_client(c,addr):
+    while 1:
+        try:
+            data = c.recv(1024)
+            broadcast(c, data)
+        
+        except:
+            terminate(c)
+            break
 
-server = Server()
+def terminate(c):
+    c.close()
+
+accept_connections()

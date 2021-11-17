@@ -23,9 +23,10 @@ from audioclient import *
 #from desktop_notifier import DesktopNotifier, Urgency, Button
 
 def handler(signum, frame):
+    abortMission()
+    curses.endwin()
     sys.exit(1)
     
-audioClient = Client()
 signal.signal(signal.SIGINT, handler)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((os.environ.get('FLOUNE_CHAT_SERVER', 'localhost'), int(os.environ.get('FLOUNE_CHAT_PORT', 5556))))
@@ -237,14 +238,13 @@ def handleVocal():
     if audioMode == False:
         audioMode = True
         curses.savetty()
-        audioClient.start()
+        run()
         q.put('')
     else:
-        audioClient.abortMission()
-        del audioClient
+        abortMission()
         audioMode = False
-        audioClient = Client()
         curses.resetty()
+        q.put('')
 
 def handleTabs():
     global tabinfo
